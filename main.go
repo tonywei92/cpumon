@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os/exec"
+	"runtime"
 	"time"
 
 	"github.com/gen2brain/beeep"
@@ -25,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	if *flagVersion {
-		fmt.Println("cpumon v1.0.0 © 2024 Tony Soekirman")
+		fmt.Printf("cpumon for %s, v1.0.0 © 2024 Tony Soekirman", runtime.GOARCH)
 		return
 	}
 
