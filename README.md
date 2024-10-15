@@ -27,6 +27,10 @@ cpumon -notify-on-cpu-more-than=80 -no-beep -notify-with="echo CPU usage high > 
 - `-no-beep`: Disable beep notification (default: false)
 - `-notify-with`: Command to run on notification (default: "")
 
+## Changelog
+
+For a detailed history of changes, please refer to the [CHANGELOG.md](CHANGELOG.md) file.
+
 ## Contributing
 
 Thank you for considering contributing to `cpumon`! We welcome contributions in the form of bug reports, feature requests, and pull requests. Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
