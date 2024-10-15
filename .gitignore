@@ -18,6 +18,9 @@ go.work
 # Go build cache
 go-build/
 
+# build directory
+build/
+
 # IDE/editor specific files
 .vscode/
 .idea/
