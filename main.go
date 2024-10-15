@@ -25,7 +25,7 @@ func main() {
 	flag.Parse()
 
 	if *flagVersion {
-		fmt.Printf("cpumon for %s, v1.0.0 © 2024 Tony Soekirman", runtime.GOARCH)
+		fmt.Printf("cpumon for %s, v1.1.0 © 2024 Tony Soekirman", runtime.GOARCH)
 		return
 	}
 
