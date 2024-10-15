@@ -16,7 +16,6 @@ import (
 func main() {
 	var (
 		flagInterval          = flag.Int("interval", 1, "Interval in seconds")
-		flagSingle            = flag.Bool("single", true, "Single CPU")
 		flagNotifyCPUMoreThan = flag.Int("notify-on-cpu-more-than", 0, "Notify on change, if notify-with is not set it will beep by default")
 		flagNoBeep            = flag.Bool("no-beep", false, "Disable beep")
 		flagNotifyWith        = flag.String("notify-with", "", "Run command on notification")
@@ -52,67 +51,52 @@ func main() {
 	warningMessage := ""
 	commandRunMessage := ""
 
-	if *flagSingle {
+	cpuCount, err := cpu.Counts(false)
+	if err != nil {
+		fmt.Println("Error fetching CPU count", err)
+		return
+	}
 
-		tracker := progress.Tracker{
-			Message: "CPU Usage",
-			Total:   100,
+	tracker := progress.Tracker{
+		Message: "CPU Usage (Total)",
+		Total:   10000,
+		Units:   progress.UnitsDefault,
+	}
+	pw.AppendTracker(&tracker)
+
+	trackers := make([]progress.Tracker, cpuCount)
+	for i := 0; i < cpuCount; i++ {
+		trackers[i] = progress.Tracker{
+			Message: fmt.Sprintf("CPU #%d Usage", i),
+			Total:   10000,
 			Units:   progress.UnitsDefault,
 		}
+		pw.AppendTracker(&trackers[i])
+	}
 
-		pw.AppendTracker(&tracker)
-
-		for {
-			percentagesSingle, err := cpu.Percent(0, false)
-			warningMessage, commandRunMessage = notify(pw, warningMessage, commandRunMessage, true, percentagesSingle[0], *flagNotifyCPUMoreThan, !*flagNoBeep, *flagNotifyWith)
-			if err != nil {
-				fmt.Println("Error fetching CPU usage", err)
-				return
-			}
-
-			// Update the progress bar
-			tracker.SetValue(int64(percentagesSingle[0]))
-			time.Sleep(time.Duration(*flagInterval) * time.Second)
-		}
-
-	} else {
-		cpuCount, err := cpu.Counts(false)
+	for {
+		percentagesSingle, err := cpu.Percent(0, false)
 		if err != nil {
-			fmt.Println("Error fetching CPU count", err)
+			fmt.Println("Error fetching CPU usage", err)
 			return
 		}
 
-		trackers := make([]progress.Tracker, cpuCount)
-		for i := 0; i < cpuCount; i++ {
-			trackers[i] = progress.Tracker{
-				Message: fmt.Sprintf("CPU #%d Usage", i),
-				Total:   100,
-				Units:   progress.UnitsDefault,
-			}
-			pw.AppendTracker(&trackers[i])
+		// notify if CPU usage is more than threshold
+		warningMessage, commandRunMessage = notify(pw, warningMessage, commandRunMessage, false, percentagesSingle[0], *flagNotifyCPUMoreThan, !*flagNoBeep, *flagNotifyWith)
+
+		percentages, err := cpu.Percent(0, true)
+		if err != nil {
+			fmt.Println("Error fetching CPU usage", err)
+			return
 		}
 
-		for {
-			percentagesSingle, err := cpu.Percent(0, false)
-			if err != nil {
-				fmt.Println("Error fetching CPU usage", err)
-				return
-			}
+		tracker.SetValue(int64(percentagesSingle[0] * 100))
 
-			warningMessage, commandRunMessage = notify(pw, warningMessage, commandRunMessage, false, percentagesSingle[0], *flagNotifyCPUMoreThan, !*flagNoBeep, *flagNotifyWith)
-
-			percentages, err := cpu.Percent(0, true)
-			if err != nil {
-				fmt.Println("Error fetching CPU usage", err)
-				return
-			}
-
-			for i, percentage := range percentages {
-				trackers[i].SetValue(int64(percentage))
-			}
-
-			time.Sleep(time.Duration(*flagInterval) * time.Second)
+		for i, percentage := range percentages {
+			trackers[i].SetValue(int64(percentage * 100))
 		}
+
+		time.Sleep(time.Duration(*flagInterval) * time.Second)
 	}
 
 }
