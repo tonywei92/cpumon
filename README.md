@@ -1,5 +1,7 @@
 # cpumon
 
+![build status](https://github.com/tonywei92/cpumon/actions/workflows/build.yml/badge.svg)
+
 ![CPU Monitor Screenshot](screenshot.png)
 
 `cpumon` is a utility designed to monitor your CPU usage and provide notifications through beeps and/or by executing a specified command.
